@@ -19,22 +19,18 @@ async fn main() -> Result<(), RespErr> {
     let client = init(&params).unwrap();
 
     let sign_resp = is_sign_in(client.clone()).await?;
-    match sign_resp.data {
-        Some(true) => {
-            sign_in(client.clone(), &params).await?;
-        }
-        _ => {
-            print!("{:#?}", sign_resp);
+    if let Some(false) = sign_resp.data {
+        sign_in(client.clone(), &params).await?;
+
+        let draw_resp = is_draw(client.clone()).await?;
+        if draw_resp.data.free_count != 0 {
+            draw(client.clone(), &params).await?;
         }
     };
-
-    let draw_resp = is_draw(client.clone()).await?;
-    if draw_resp.data.free_count != 0 {
-        draw(client.clone(), &params).await?;
-    }
     Ok(())
 }
 
+//初始化reqwest客户端
 fn init(params: &Post) -> Result<Client, RespErr> {
     let mut headers = header::HeaderMap::new();
     headers.insert(COOKIE, params.cookie.parse().unwrap());
@@ -50,7 +46,7 @@ async fn is_sign_in(client: Client) -> Result<SignResp, RespErr> {
         .await?
         .json::<SignResp>()
         .await?;
-    println!("是否签到：{:#?}", resp);
+    println!("是否已签到：{:#?}", resp.data.unwrap());
     Ok(resp)
 }
 
@@ -75,7 +71,7 @@ async fn is_draw(client: Client) -> Result<DrawResp, RespErr> {
         .await?
         .json::<DrawResp>()
         .await?;
-    println!("是否已抽奖");
+    println!("未抽奖次数还有{:#?}次", resp.data.free_count);
     Ok(resp)
 }
 

@@ -4,6 +4,7 @@ mod url;
 use param::*;
 use reqwest::header::{self, COOKIE};
 use reqwest::Client;
+use tokio::time;
 use url::*;
 
 type RespErr = Box<dyn std::error::Error>;
@@ -22,11 +23,13 @@ async fn main() -> Result<(), RespErr> {
     if let Some(false) = sign_resp.data {
         sign_in(client.clone(), &params).await?;
 
-        let draw_resp = is_draw(client.clone()).await?;
-        if draw_resp.data.free_count != 0 {
-            draw(client.clone(), &params).await?;
-        }
+        time::sleep(time::Duration::from_secs(5)).await;
     };
+
+    let draw_resp = is_draw(client.clone()).await?;
+    if draw_resp.data.free_count != 0 {
+        draw(client.clone(), &params).await?;
+    }
     Ok(())
 }
 

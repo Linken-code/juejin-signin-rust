@@ -54,16 +54,18 @@ async fn is_sign_in(client: Client) -> Result<SignResp, RespErr> {
 }
 
 //签到
-async fn sign_in(client: Client, new_post: &Post<'_>) -> Result<SignResp, RespErr> {
+async fn sign_in(client: Client, new_post: &Post<'_>) -> Result<(), RespErr> {
     let resp = client
         .post(BASE_URL.to_string() + SIGNINURL)
         .json(new_post)
         .send()
         .await?
-        .json::<SignResp>()
+        .text()
         .await?;
-    println!("签到：{:#?}", resp);
-    Ok(resp)
+    // .json::<SignResp>()
+    // .await?;
+    println!("签到：{:?}", resp);
+    Ok(())
 }
 
 //是否已抽奖
